@@ -20,6 +20,8 @@ typedef enum {
 @property(nonatomic) BOOL showsMenu;
 @property(readonly, nonatomic) BOOL isShowingMenu;
 
+@property(nonatomic) BOOL showsCloseButton;
+
 @property(nonatomic) CGFloat borderWidth;
 @property(nonatomic) LIBorderMask borderMask;
 @property(nonatomic, copy) NSColor *borderColor;
@@ -44,6 +46,8 @@ typedef enum {
 
 @property(nonatomic) BOOL showsMenu;
 @property(readonly, nonatomic) BOOL isShowingMenu;
+
+@property(nonatomic) BOOL showsCloseButton;
 
 @property(nonatomic) LIBorderMask borderMask;
 @property(nonatomic, copy) NSColor *borderColor;

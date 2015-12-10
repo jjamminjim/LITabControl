@@ -27,6 +27,8 @@
 
 @implementation LITabCell
 
+@synthesize showsCloseButton = _showsCloseButton;
+
 - (id)initTextCell:(NSString *)aString {
     if ((self = [super initTextCell:aString])) {
         
@@ -66,17 +68,26 @@
     copy->_titleHighlightColor = [_titleHighlightColor copyWithZone:zone];
     
     copy->_showsMenu = _showsMenu;
-    copy->_isShowingMenu = _isShowingMenu;
-    
+	copy->_isShowingMenu = _isShowingMenu;
+	copy->_showsCloseButton = _showsCloseButton;
+	
     return copy;
 }
 
 - (void)setShowsMenu:(BOOL)showsMenu {
-    if (_showsMenu != showsMenu) {
-        _showsMenu = showsMenu;
-        
-        [self.controlView setNeedsDisplay:YES];
-    }
+	if (_showsMenu != showsMenu) {
+		_showsMenu = showsMenu;
+		
+		[self.controlView setNeedsDisplay:YES];
+	}
+}
+
+- (void)setShowsCloseButton:(BOOL)showsCloseButton {
+	if (_showsCloseButton != showsCloseButton) {
+		_showsCloseButton = showsCloseButton;
+		
+		[self.controlView setNeedsDisplay:YES];
+	}
 }
 
 - (void)setBorderWidth:(CGFloat)borderWidth {
@@ -130,11 +141,19 @@
 }
 
 + (NSImage *)popupImage {
-    static NSImage *ret = nil;
-    if (ret == nil) {
-        ret = [[NSImage imageNamed:@"LIPullDownTemplate"] imageWithTint:[NSColor darkGrayColor]];
-    }
-    return ret;
+	static NSImage *ret = nil;
+	if (ret == nil) {
+		ret = [[NSImage imageInFrameworkWithFileName:@"LIPullDownTemplate.pdf"] imageWithTint:[NSColor darkGrayColor]];
+	}
+	return ret;
+}
+
++ (NSImage *)closeImage {
+	static NSImage *ret = nil;
+	if (ret == nil) {
+		ret = [[NSImage imageInFrameworkWithFileName:@"LITabDeleteTemplate.tiff"] imageWithTint:[NSColor darkGrayColor]];
+	}
+	return ret;
 }
 
 - (NSSize)cellSizeForBounds:(NSRect)aRect {
@@ -145,11 +164,19 @@
 }
 
 - (NSRect)popupRectWithFrame:(NSRect)cellFrame {
-    NSRect popupRect = NSZeroRect;
-    popupRect.size = [[LITabCell popupImage] size];
-    popupRect.origin = NSMakePoint(NSMaxX(cellFrame) - NSWidth(popupRect) - 8, NSMidY(cellFrame) - NSHeight(popupRect) / 2);
-    
-    return popupRect;
+	NSRect popupRect = NSZeroRect;
+	popupRect.size = [[LITabCell popupImage] size];
+	popupRect.origin = NSMakePoint(NSMaxX(cellFrame) - NSWidth(popupRect) - 8, NSMidY(cellFrame) - NSHeight(popupRect) / 2);
+	
+	return popupRect;
+}
+
+- (NSRect)closeButtonRectWithFrame:(NSRect)cellFrame {
+	NSRect popupRect = NSZeroRect;
+	popupRect.size = [[LITabCell closeImage] size];
+	popupRect.origin = NSMakePoint(NSMaxX(cellFrame) - NSWidth(popupRect) - 8, NSMidY(cellFrame) - NSHeight(popupRect) / 2);
+	
+	return popupRect;
 }
 
 - (NSRect)titleRectForBounds:(NSRect)cellFrame {
@@ -161,8 +188,17 @@
         CGFloat titleRectInset = ceilf(NSMaxX(cellFrame) - NSMinX(popupRect));
         
         titleRect = NSOffsetRect(titleRect, 0, -1);
-        titleRect = NSInsetRect(titleRect, titleRectInset, 0);
+        titleRect = NSInsetRect(titleRect, titleRectInset / 2 + 1, 0);
     }
+	else if (self.showsCloseButton)
+	{
+		NSRect buttonRect = [self closeButtonRectWithFrame:cellFrame];
+		CGFloat titleRectInset = ceilf(NSMaxX(cellFrame) - NSMinX(buttonRect));
+		
+		titleRect = NSOffsetRect(titleRect, 0, -1);
+		titleRect = NSInsetRect(titleRect, titleRectInset / 2 + 1, 0);
+	}
+	
     return titleRect;
 }
 
@@ -183,8 +219,10 @@
 }
 
 - (BOOL)trackMouse:(NSEvent *)theEvent inRect:(NSRect)cellFrame ofView:(NSView *)controlView untilMouseUp:(BOOL)flag {
-    NSRect popupRect = [self popupRectWithFrame:cellFrame];
+	NSRect popupRect = [self popupRectWithFrame:cellFrame];
+	NSRect buttonRect = [self closeButtonRectWithFrame:cellFrame];
     NSPoint location = [controlView convertPoint:[theEvent locationInWindow] fromView:nil];
+	
     if ([self hitTestForEvent:theEvent inRect:[[controlView superview] frame] ofView:[controlView superview]] != NSCellHitNone) {
         
         NSMenu *menu = [self menuForEvent:theEvent inRect:cellFrame ofView:controlView];
@@ -196,7 +234,15 @@
             
         }
     }
-    
+	
+	if ([self hitTestForEvent:theEvent inRect:buttonRect ofView:controlView] != NSCellHitNone) {
+		LITabControl *enclosingTabControl = [self enclosingTabControlInView:controlView];
+		
+		if (enclosingTabControl && enclosingTabControl.removeAction && enclosingTabControl.removeTarget){
+			[enclosingTabControl removeItem:self.representedObject];
+		}
+	}
+	
     return [super trackMouse:theEvent inRect:cellFrame ofView:controlView untilMouseUp:flag];
     
 }
@@ -228,16 +274,20 @@
 
 #pragma mark -
 #pragma mark Drawing
--(void)drawImage:(NSImage *)image withFrame:(NSRect)frame inView:(NSView *)controlView{
-    [super drawImage:[image imageWithTint:self.isHighlighted ? DF_HIGHLIGHT_COLOR : [NSColor darkGrayColor]] withFrame:frame inView:controlView];
-
-}
+//-(void)drawImage:(NSImage *)image withFrame:(NSRect)frame inView:(NSView *)controlView{
+//    [super drawImage:[image imageWithTint:self.isHighlighted ? DF_HIGHLIGHT_COLOR : [NSColor darkGrayColor]] withFrame:frame inView:controlView];
+//
+//}
 - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView *)controlView {
     [super drawWithFrame:cellFrame inView:controlView];
 
     if (self.showsMenu) {
         [[LITabCell popupImage] drawInRect:[self popupRectWithFrame:cellFrame] fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0 respectFlipped:YES hints:nil];
     }
+	else if (self.showsCloseButton)
+	{
+		[[LITabCell closeImage] drawInRect:[self closeButtonRectWithFrame:cellFrame] fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0 respectFlipped:YES hints:nil];
+	}
 }
 
 - (void)drawBezelWithFrame:(NSRect)cellFrame inView:(NSView *)controlView {
@@ -275,10 +325,17 @@
 }
 
 - (BOOL)showsMenu {
-    return [self.cell showsMenu];
+	return [self.cell showsMenu];
 }
 - (void)setShowsMenu:(BOOL)showsMenu {
-    [self.cell setShowsMenu:showsMenu];
+	[self.cell setShowsMenu:showsMenu];
+}
+
+- (BOOL)showsCloseButton {
+	return [self.cell showsCloseButton];
+}
+- (void)setShowsCloseButton:(BOOL)showsCloseButton {
+	[self.cell setShowsCloseButton:showsCloseButton];
 }
 
 - (BOOL)isShowingMenu {

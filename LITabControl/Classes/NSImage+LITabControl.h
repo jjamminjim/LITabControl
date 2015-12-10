@@ -12,4 +12,7 @@
 
 - (NSImage *)imageWithTint:(NSColor *)color;
 
++ (id) imageWithFileName:(NSString *) fileName inBundleForClass:(Class) aClass;
++ (id) imageInFrameworkWithFileName:(NSString *) fileName;
+
 @end

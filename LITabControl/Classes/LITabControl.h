@@ -70,10 +70,14 @@ extern NSString *LITabControlSelectionDidChangeNotification;
 @property(nonatomic) SEL addAction;
 @property(nonatomic, weak) id addTarget;
 
+@property(nonatomic) SEL removeAction;
+@property(nonatomic, weak) id removeTarget;
+
 #pragma mark -
 #pragma mark Editing
 
 - (void)editItem:(id)item;
+- (void)removeItem:(id)item;
 
 #pragma mark -
 #pragma mark Tab Buttons

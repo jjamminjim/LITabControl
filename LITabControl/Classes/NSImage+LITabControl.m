@@ -7,6 +7,7 @@
 //
 
 #import "NSImage+LITabControl.h"
+#import "LITabControl.h"
 
 @implementation NSImage (LITabControl)
 
@@ -24,6 +25,34 @@
     [highlightImage unlockFocus];
 
     return highlightImage;
+}
+
++ (id) imageWithFileName:(NSString *) fileName inBundle:(NSBundle *)aBundle
+{
+	NSImage *img = nil;
+	
+	if (aBundle != nil)
+	{
+		NSString *imagePath;
+		if ((imagePath = [aBundle pathForResource: fileName ofType:
+						  nil]) != nil)
+		{
+			img = [[NSImage alloc] initWithContentsOfFile:imagePath];
+		}
+	}
+	
+	return img;
+}
+
++ (id) imageWithFileName:(NSString *) fileName inBundleForClass:(Class) aClass
+{
+	return [self imageWithFileName: fileName inBundle: [NSBundle bundleForClass: aClass]];
+}
+
++ (id) imageInFrameworkWithFileName:(NSString *) fileName
+{
+	NSBundle *aBundle = [NSBundle bundleForClass: [LITabControl class]];
+	return [self imageWithFileName: fileName inBundle: aBundle];
 }
 
 @end
