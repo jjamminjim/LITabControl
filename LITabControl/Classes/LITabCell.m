@@ -31,22 +31,22 @@
 
 - (id)initTextCell:(NSString *)aString {
     if ((self = [super initTextCell:aString])) {
-        
+
         self.font           = DF_FONT;
-        
+
         _borderWidth        = 1;
         _borderColor        = DF_BORDER_COLOR;
         _backgroundColor    = DF_BACKGROUND_COLOR;
-        
+
         _titleColor          = DF_TITLE_COLOR;
         _titleHighlightColor = DF_HIGHLIGHT_COLOR;
-        
+
         _minWidth           = INCH * 2.75;
         _maxWidth           = INCH * 2.75;
-        
+
         [self setBordered:YES];
         [self setBackgroundStyle:NSBackgroundStyleLight];
-        
+
         [self setHighlightsBy:NSNoCellMask];
         [self setLineBreakMode:NSLineBreakByTruncatingTail];
     }
@@ -55,29 +55,29 @@
 
 - (id)copyWithZone:(NSZone *)zone {
     LITabCell *copy = [super copyWithZone:zone];
-    
+
     copy->_minWidth = _minWidth;
     copy->_maxWidth = _maxWidth;
-    
+
     copy->_borderMask = _borderMask;
     copy->_borderWidth = _borderWidth;
     copy->_borderColor = [_borderColor copyWithZone:zone];
     copy->_backgroundColor = [_backgroundColor copyWithZone:zone];
-    
+
     copy->_titleColor = [_titleColor copyWithZone:zone];
     copy->_titleHighlightColor = [_titleHighlightColor copyWithZone:zone];
-    
+
     copy->_showsMenu = _showsMenu;
 	copy->_isShowingMenu = _isShowingMenu;
 	copy->_showsCloseButton = _showsCloseButton;
-	
+
     return copy;
 }
 
 - (void)setShowsMenu:(BOOL)showsMenu {
 	if (_showsMenu != showsMenu) {
 		_showsMenu = showsMenu;
-		
+
 		[self.controlView setNeedsDisplay:YES];
 	}
 }
@@ -85,7 +85,7 @@
 - (void)setShowsCloseButton:(BOOL)showsCloseButton {
 	if (_showsCloseButton != showsCloseButton) {
 		_showsCloseButton = showsCloseButton;
-		
+
 		[self.controlView setNeedsDisplay:YES];
 	}
 }
@@ -93,21 +93,21 @@
 - (void)setBorderWidth:(CGFloat)borderWidth {
     if (_borderWidth != borderWidth) {
         _borderWidth = borderWidth;
-        
+
         [self.controlView setNeedsDisplay:YES];
     }
 }
 - (void)setBorderColor:(NSColor *)borderColor {
     if (_borderColor != borderColor) {
         _borderColor = borderColor.copy;
-        
+
         [self.controlView setNeedsDisplay:YES];
     }
 }
 - (void)setBackgroundColor:(NSColor *)backgroundColor {
     if (_backgroundColor != backgroundColor) {
         _backgroundColor = backgroundColor.copy;
-        
+
         [self.controlView setNeedsDisplay:YES];
     }
 }
@@ -115,7 +115,7 @@
 - (void)setBorderMask:(LIBorderMask)borderMask {
     if (_borderMask != borderMask) {
         _borderMask = borderMask;
-        
+
         [self.controlView setNeedsDisplay:YES];
     }
 }
@@ -123,7 +123,7 @@
 - (void)setMinWidth:(CGFloat)minWidth {
     if (_minWidth != minWidth) {
         _minWidth = minWidth;
-        
+
         if ([self.controlView respondsToSelector:@selector(constrainSizeWithCell:)]) {
             [(id)self.controlView constrainSizeWithCell:self];
         }
@@ -133,7 +133,7 @@
 - (void)setMaxWidth:(CGFloat)maxWidth {
     if (_maxWidth != maxWidth) {
         _maxWidth = maxWidth;
-        
+
         if ([self.controlView respondsToSelector:@selector(constrainSizeWithCell:)]) {
             [(id)self.controlView constrainSizeWithCell:self];
         }
@@ -159,7 +159,7 @@
 - (NSSize)cellSizeForBounds:(NSRect)aRect {
     NSSize titleSize = [[self attributedTitle] size];
     NSSize popupSize = ([self menu] == nil) ? NSZeroSize : [[LITabCell popupImage] size];
-    
+
     return NSMakeSize(titleSize.width + (popupSize.width * 2) + 36, MAX(titleSize.height, popupSize.height));
 }
 
@@ -167,7 +167,7 @@
 	NSRect popupRect = NSZeroRect;
 	popupRect.size = [[LITabCell popupImage] size];
 	popupRect.origin = NSMakePoint(NSMaxX(cellFrame) - NSWidth(popupRect) - 8, NSMidY(cellFrame) - NSHeight(popupRect) / 2);
-	
+
 	return popupRect;
 }
 
@@ -175,18 +175,18 @@
 	NSRect popupRect = NSZeroRect;
 	popupRect.size = [[LITabCell closeImage] size];
 	popupRect.origin = NSMakePoint(NSMaxX(cellFrame) - NSWidth(popupRect) - 8, NSMidY(cellFrame) - NSHeight(popupRect) / 2);
-	
+
 	return popupRect;
 }
 
 - (NSRect)titleRectForBounds:(NSRect)cellFrame {
     NSSize titleSize = [[self attributedTitle] size];
     NSRect titleRect = NSMakeRect(NSMinX(cellFrame), floorf(NSMidY(cellFrame) - titleSize.height/2), NSWidth(cellFrame), titleSize.height);
-    
+
     if (self.menu != nil) {
         NSRect popupRect = [self popupRectWithFrame:cellFrame];
         CGFloat titleRectInset = ceilf(NSMaxX(cellFrame) - NSMinX(popupRect));
-        
+
         titleRect = NSOffsetRect(titleRect, 0, -1);
         titleRect = NSInsetRect(titleRect, titleRectInset / 2 + 1, 0);
     }
@@ -194,11 +194,11 @@
 	{
 		NSRect buttonRect = [self closeButtonRectWithFrame:cellFrame];
 		CGFloat titleRectInset = ceilf(NSMaxX(cellFrame) - NSMinX(buttonRect));
-		
+
 		titleRect = NSOffsetRect(titleRect, 0, -1);
 		titleRect = NSInsetRect(titleRect, titleRectInset / 2 + 1, 0);
 	}
-	
+
     return titleRect;
 }
 
@@ -222,37 +222,39 @@
 	NSRect popupRect = [self popupRectWithFrame:cellFrame];
 	NSRect buttonRect = [self closeButtonRectWithFrame:cellFrame];
     NSPoint location = [controlView convertPoint:[theEvent locationInWindow] fromView:nil];
-	
+
     if ([self hitTestForEvent:theEvent inRect:[[controlView superview] frame] ofView:[controlView superview]] != NSCellHitNone) {
-        
-        NSMenu *menu = [self menuForEvent:theEvent inRect:cellFrame ofView:controlView];
-    
-        if (menu.itemArray.count > 0 &&  NSPointInRect(location, popupRect)) {
-            [menu popUpMenuPositioningItem:menu.itemArray[0] atLocation:NSMakePoint(NSMidX(popupRect), NSMaxY(popupRect)) inView:controlView];
-            [self setShowsMenu:NO];
-            return YES;
-            
-        }
-    }
-	
-	if ([self hitTestForEvent:theEvent inRect:buttonRect ofView:controlView] != NSCellHitNone) {
-		LITabControl *enclosingTabControl = [self enclosingTabControlInView:controlView];
-		
-		if (enclosingTabControl && enclosingTabControl.removeAction && enclosingTabControl.removeTarget){
-			[enclosingTabControl removeItem:self.representedObject];
+		if (self.showsCloseButton) {
+			if (NSPointInRect(location, buttonRect)) {
+				LITabControl *enclosingTabControl = [self enclosingTabControlInView:controlView];
+
+				if (enclosingTabControl) {
+					[enclosingTabControl removeItem:self.representedObject];
+				}
+			}
+		} else {
+			NSMenu *menu = [self menuForEvent:theEvent inRect:cellFrame ofView:controlView];
+
+			if (menu.itemArray.count > 0 &&  NSPointInRect(location, popupRect)) {
+				[menu popUpMenuPositioningItem:menu.itemArray[0] atLocation:NSMakePoint(NSMidX(popupRect), NSMaxY(popupRect)) inView:controlView];
+				[self setShowsMenu:NO];
+				return YES;
+
+			}
 		}
-	}
-	
+    }
+
+
     return [super trackMouse:theEvent inRect:cellFrame ofView:controlView untilMouseUp:flag];
-    
+
 }
 
 - (NSMenu *)menuForEvent:(NSEvent *)event inRect:(NSRect)cellFrame ofView:(NSView *)view {
     LITabControl *enclosingTabControl = [self enclosingTabControlInView:view];
-    
+
     if (enclosingTabControl) {
         NSMenu *menu = [enclosingTabControl.dataSource tabControl:enclosingTabControl menuForItem:self.representedObject];
-        
+
         if (menu != nil) {
             // this following side-effect is a bit hokey
             // but it ensures that the receiver of context popup
@@ -260,12 +262,12 @@
             // the action. It also ensures that the dataSource and
             // target of the control updates associated views prior
             // to context menu display...
-            
+
             [enclosingTabControl setSelectedItem:self.representedObject];
             [NSApp sendAction:enclosingTabControl.action to:enclosingTabControl.target from:enclosingTabControl];
             [[NSNotificationCenter defaultCenter] postNotificationName:LITabControlSelectionDidChangeNotification object:enclosingTabControl];
         }
-        
+
         return menu;
     } else {
         return [super menuForEvent:event inRect:cellFrame ofView:view];
@@ -293,7 +295,7 @@
 - (void)drawBezelWithFrame:(NSRect)cellFrame inView:(NSView *)controlView {
     [self.backgroundColor set];
     NSRectFill(cellFrame);
-    
+
     NSRect *borderRects;
     NSInteger borderRectCount;
     if (LIRectArrayWithBorderMask(cellFrame, self.borderWidth, self.borderMask, &borderRects, &borderRectCount)) {
@@ -412,7 +414,7 @@
             [self addConstraint:_minWidthConstraint];
         }
     }
-    
+
     if (_maxWidthConstraint != nil) {
         if (cell.maxWidth > 0) {
             [_maxWidthConstraint setConstant:cell.maxWidth];
@@ -429,7 +431,7 @@
             [self addConstraint:_maxWidthConstraint];
         }
     }
-    
+
 }
 
 @end
@@ -437,7 +439,7 @@
 BOOL LIRectArrayWithBorderMask(NSRect sourceRect, CGFloat borderWidth, LIBorderMask borderMask, NSRect **rectArray, NSInteger *rectCount) {
     NSInteger outputCount = 0;
     static NSRect outputArray[4];
-    
+
     NSRect remainderRect;
     if (borderMask & LIBorderMaskTop) {
         NSDivideRect(sourceRect, &outputArray[outputCount++], &remainderRect, borderWidth, NSMinYEdge);
@@ -451,10 +453,10 @@ BOOL LIRectArrayWithBorderMask(NSRect sourceRect, CGFloat borderWidth, LIBorderM
     if (borderMask & LIBorderMaskBottom) {
         NSDivideRect(sourceRect, &outputArray[outputCount++], &remainderRect, borderWidth, NSMaxYEdge);
     }
-    
+
     if (rectCount) *rectCount = outputCount;
     if (rectArray) *rectArray = &outputArray[0];
-    
+
     return (outputCount > 0);
 }
 
